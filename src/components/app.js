@@ -6,6 +6,10 @@ import HeaderCommon from "./common/header.js";
 import FooterCommon from "./common/footer.js";
 import BreadcrumbCommon from "./common/breadcrumb.js";
 import { Table, Layout, Menu, Breadcrumb } from 'antd';
+import io from "socket.io-client";
+
+const endpoint="http://localhost:4000";
+const socket=io.connect(endpoint);
 
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";

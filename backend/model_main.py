@@ -142,6 +142,7 @@ y_pred_org = (y_pred * min_max_scaler.data_range_[3]) + min_max_scaler.data_min_
 # min_max_scaler.inverse_transform(y_pred)
 y_test_t_org = (y_test_t * min_max_scaler.data_range_[3]) + min_max_scaler.data_min_[3]
 # min_max_scaler.inverse_transform(y_test_t)
+print("predicted values")
 print(y_pred_org[0:15])
 print(y_test_t_org[0:15])
 
@@ -160,7 +161,7 @@ plt.title('Prediction vs Real Stock Price')
 plt.ylabel('Price')
 plt.xlabel('Days')
 plt.legend(['Prediction', 'Real'], loc='upper left')
-#plt.show()
+plt.show()
 plt.savefig(( 'pred_vs_real_BS'+str(BATCH_SIZE)+"_"+time.ctime()+'.png'))
 print_time("program completed ", stime)
 
