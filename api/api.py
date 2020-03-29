@@ -1,25 +1,56 @@
-#API file
+import json
+import io
+import sys
+import re
+from flask import Flask
+from keras.models import load_model
+from collections import defaultdict
 
-from flask import Flask, request
+model = load_model('model_ge_prediction.h5')
+file_h5 = open_file(sys.argv[1])
+
+class convert:
+
+    def __init__(self, input_file):
+        self.file_name = re.sub(r'\.h5$', '', sys.argv[1])
+        self.file = input_file
+        self.all_groups = []
+        self.group_parent = defaultdict(list)
+        self.group_contents = {}
+
+
+        for group in input_file.walk_groups():
+            name = group._v_name
+            parent = group._v_parent
+            parent = parent._v_name
+            self.all_groups.append(name)
+            self.group_parent[parent].append(name)
+            self.group_contents[name] = {}
+            self.all_groups.append(name)
+
+            for array in file_h5.list_nodes(group, classname = "Array"):
+                array_name = array._v_name
+                array_contents = array.read()
+                array_info = {array_name : array_contents}
+                self.group_contents[name].update(array_info)
+
+    def json_output(self):
+        main = self.group_contents
+        json_file_name = self.file_name + '.json'
+        with io.open(json_file_name, 'w', encoding = 'utf-8') as f:
+            f.write(unicode(json.dumps(main, cls = NumpyAwareJSONEncoder, ensure_ascii = False)))
+        f.close()
+        return
+
+json_data = convert(file_h5)
+contents = json_data.json_output()
 
 app = Flask(__name__)
 
-@app.after_request
-def add_header(response):
-    response.headers['X-UA-Compatible'] = 'IE = Edge,chrome = 1'
-    response.headers['Cache-Control'] = 'public, max-age = 0'
-    return response
+@app.route('/predicted_stock_values', methods = ['POST'])
+def main():
+    if request.method == 'POST':
+        return contents
 
-#Get input from user
-stock = input ("Please enter the stock name : ")
-start_date = input ("Please enter the start date in the format YYYY, MM, DD : ")
-end_date = input ("Please enter the end date in the format: YYYY, MM, DD : ")
-
-@app.route('/historical_stock_price', methods = ['GET'])
-
-#how to read from the data model?
-def historical_stock_price (stock):
-    if request.method == 'GET':
-        print("Getting historical stock prices for the stock ", stock)
-        stock_data = stocks(stock, start_date, end_date) #define the stocks function to read from backend
-        return stock_data
+if __name__ == '__main__':
+    app.run()
