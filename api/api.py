@@ -13,16 +13,15 @@ ge_predict_file = tables.open_file(sys.argv[1])
 
 class convert:
 
-    def _init_(self, input_file):
-	
+    def __init__(self, input_file):
         self.file_name = re.sub(r'\.h5$', '', sys.argv[1])
         self.file = input_file
         self.all_groups = []
         self.group_parent = defaultdict(list)
         self.group_contents = {}
 
+
         for group in input_file.walk_groups():
-		
             name = group._v_name
             parent = group._v_parent
             parent = parent._v_name
@@ -32,14 +31,12 @@ class convert:
             self.all_groups.append(name)
 
             for array in ge_predict_file.list_nodes(group, classname = "Array"):
-			
                 array_name = array._v_name
                 array_contents = array.read()
                 array_info = {array_name : array_contents}
                 self.group_contents[name].update(array_info)
 
     def json_output(self):
-	
         print('group_contents: ', self.group_contents)
         main = self.group_contents
         json_file_name = self.file_name + '.json'
@@ -49,23 +46,21 @@ class convert:
         return
 
 class json_encoder(json.JSONEncoder):
-
 	def default(self, obj):
-		
 		if isinstance(obj, numpy.ndarray):
 			return obj.tolist()
 		return json.JSONEncoder.default(self, obj)
 
 json_data = convert(ge_predict_file)
 contents = json_data.json_output()
+print(contents)
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 @app.route('/predicted_stock_values', methods = ['POST'])
-
 def main():
     if request.method == 'POST':
         return contents
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run()
