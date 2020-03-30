@@ -45,11 +45,11 @@ class convert:
         f.close()
         return
 
-class json_encoder(self):
+class json_encoder(json.JSONEncoder):
 	def default(self, obj):
 		if isinstance(obj, numpy.ndarray):
 			return obj.tolist()
-		return json_encoder(self, obj)
+		return json.JSONEncoder(self, obj)
 
 json_data = convert(file_h5)
 contents = json_data.json_output()
