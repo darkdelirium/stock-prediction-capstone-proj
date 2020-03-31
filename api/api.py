@@ -7,6 +7,10 @@ import numpy
 from flask import Flask
 from keras.models import load_model
 from collections import defaultdict
+from flask_cors import CORS
+
+with open('ge-predict-ref.json') as f:
+    data = json.load(f)
 
 model = load_model('model_ge_prediction.h5')
 ge_predict_file = tables.open_file(sys.argv[1])
@@ -54,13 +58,18 @@ class json_encoder(json.JSONEncoder):
 json_data = convert(ge_predict_file)
 contents = json_data.json_output()
 print(contents)
+print(type(contents)) 
+print(data)
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+@cross_origin()
 
-@app.route('/predicted_stock_values', methods = ['POST'])
+@app.route('/predicted_stock_values', methods = ['GET'])
 def main():
-    if request.method == 'POST':
-        return contents
+    return data
+#   if request.method == 'GET':
+    
 
 if __name__ == '__main__':
     app.run()
