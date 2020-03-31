@@ -35,5 +35,6 @@ if __name__ == '__main__':
     model = load_model('model_ge_prediction.h5') 
     model_columns = load_model('model_ge_prediction.h5') 
     print ('Model and model columns loaded successfully')
+    model.summary()
 
     app.run(port = port, debug = False)
