@@ -5,6 +5,7 @@ import re
 import tables
 import numpy
 from flask import Flask
+from flask import jsonify
 from keras.models import load_model
 from collections import defaultdict
 from flask_cors import CORS
@@ -63,11 +64,11 @@ print(data)
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-@cross_origin()
+CORS(app)
 
 @app.route('/predicted_stock_values', methods = ['GET'])
 def main():
-    return data
+    return jsonify(data)
 #   if request.method == 'GET':
     
 
