@@ -2818,3 +2818,15 @@ README.md
 [0.4127756968517706, 0.4211755684789789, 0.4125340493109959, 0.42084560827178524, 0.9199950291943223]]
 }
 
+
+# test from python 
+
+test_json = "put above json here "
+
+
+import requests
+
+
+result = requests.post("http://localhost:12345/predict",  
+                       json = test_json)  
+print(result.json()) 
