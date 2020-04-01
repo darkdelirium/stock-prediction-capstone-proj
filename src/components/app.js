@@ -1,15 +1,12 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import Results from "./results.js";
 import HeaderCommon from "./common/header.js";
 import FooterCommon from "./common/footer.js";
 import BreadcrumbCommon from "./common/breadcrumb.js";
-import { Table, Layout, Menu, Breadcrumb } from 'antd';
-import io from "socket.io-client";
+import { Layout, Tabs } from 'antd';
 
-const endpoint="http://localhost:4000";
-const socket=io.connect(endpoint);
+const { TabPane } = Tabs;
 
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
@@ -20,6 +17,8 @@ am4core.useTheme(am4themes_animated);
 import 'antd/dist/antd.css';
 import '../style.css';
 import Axios from "axios";
+
+import { getDayFromWeek } from "@amcharts/amcharts4/.internal/core/utils/Utils";
 
 const { Header, Content, Footer } = Layout;
 
@@ -346,26 +345,103 @@ const headers = [
       "dataIndex": "low"
     }
   ];
+
+  const headersPredicted = [
+    {
+      "title": "Day",
+      "dataIndex": "day"
+    },
+    {
+      "title": "Predicted Value",
+      "dataIndex": "value"
+    },
+    {
+      "title": "Real Value",
+      "dataIndex": "real"
+    }
+  ];
 class App extends Component {
 
-  componentDidMount() {
-    const fetchData = async() => {
-      const data = await Axios.get("https://financialmodelingprep.com/api/v3/historical-price-full/AAPL");
-      console.log (data.data);
-      this.props.onValueChange(data.data);
+  generateData = (jsonInput={}) => {
+    console.log("generateData Called", jsonInput)
+    console.log(jsonInput)
+    const newArr= []
+    if (Object.entries(jsonInput).length !== 0) {
+      jsonInput.y_pred_values.forEach((item, i)=> {newArr.push({value: item, real:jsonInput.y_real_values[i], day: ++i})})
+ //   jsonInput.y_real_values.foreach((item, i)=> {newObj.y_real_values.push({value: item, day: ++i})})
+    return newArr
     }
+    else return []
+  }
 
-    fetchData();
-    setTimeout(console.log(this.props.testValue.historical),100000);
+  fetchData = async() => {
+    const data = await Axios.get("https://financialmodelingprep.com/api/v3/historical-price-full/GE");
+    console.log (data.data);
+    //this.props.onValueChange({reference: data.data});
+    console.log("onvaluechange",this.props.onValueChange)
+    this.props.onValueChange(data.data)
+
+    const predicted = await Axios.get("http://127.0.0.1:5000/predicted_stock_values")
+    console.log("predicted", predicted.data)
+    this.props.onGetPredicted(predicted.data)
+  }
+
+  componentDidMount() {
+    this.fetchData();
+//    setTimeout(console.log(this.props.testValue.historical),100000);
     let locator = this.props.location.pathname;
     console.log(`DEBUG handle ${locator}`);
+
+    let originalDataChart = am4core.create("originaldata", am4charts.XYChart);
+    originalDataChart.numberFormatter.numberFormat = "#.";
+    originalDataChart.dateFormatter.numberFormat = "#."
+    originalDataChart.paddingRight=20;
+    originalDataChart.data=this.props.testValue.reference.historical||[];
+    let dateAxisO = originalDataChart.xAxes.push(new am4charts.DateAxis());
+    dateAxisO.renderer.grid.template.location = 0;
+
+    let valueAxisO = originalDataChart.yAxes.push(new am4charts.ValueAxis());
+    valueAxisO.tooltip.disabled = true;
+    valueAxisO.renderer.minWidth = 35;
+
+    let seriesO = originalDataChart.series.push(new am4charts.LineSeries());
+    seriesO.name = "High";
+    seriesO.dataFields.valueX = "date";
+    //yAxis.numberFormatter.numberFormat = "#.##";
+    seriesO.dataFields.valueY = "high";
+
+    seriesO.tooltipText = "{valueY.value}";
+    originalDataChart.cursor = new am4charts.XYCursor();
+
+    //series 2
+    let series2O = originalDataChart.series.push(new am4charts.LineSeries());
+    series2O.name = "Low";
+    series2O.stroke = am4core.color("#CDA2AB");
+    series2O.dataFields.valueX = "date";
+    series2O.dataFields.valueY = "low";
+
+
+    /*let scrollbarXO = new am4charts.XYChartScrollbar();
+    scrollbarXO.series.push(seriesO);
+    scrollbarXO.series.push(series2O);
+
+    originalDataChart.scrollbarXO = scrollbarXO;
+ */
+    this.originalDataChart = originalDataChart;
+   
+  //========================
+
     let chart = am4core.create("chartdiv", am4charts.XYChart);
 
     chart.paddingRight = 20;
 
-
+    const newData=this.generateData(this.props.testValue.predicted);
+    this.props.onProceedResult(newData)
+    console.log("component did mount newData", newData)
     //chart.data=testdata;
-    chart.data=this.props.testValue.historical;
+    chart.data=this.props.testValue.predictedResults||[];
+   // chart.data=this.props.testValue.historical||[];
+    //chart.data=this.props.testValue.predicted||[];
     let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
     dateAxis.renderer.grid.template.location = 0;
 
@@ -374,18 +450,18 @@ class App extends Component {
     valueAxis.renderer.minWidth = 35;
 
     let series = chart.series.push(new am4charts.LineSeries());
-    series.name = "High";
-    series.dataFields.dateX = "date";
-    series.dataFields.valueY = "high";
+    series.name = "Predict";
+    series.dataFields.dateX = "day";
+    series.dataFields.valueY = "value";
 
     series.tooltipText = "{valueY.value}";
     chart.cursor = new am4charts.XYCursor();
 //series 2
     let series2 = chart.series.push(new am4charts.LineSeries());
-    series2.name = "Low";
+    series2.name = "Real";
     series2.stroke = am4core.color("#CDA2AB");
-    series2.dataFields.dateX = "date";
-    series2.dataFields.valueY = "low";
+    series2.dataFields.dateX = "day";
+    series2.dataFields.valueY = "real";
 
 
     let scrollbarX = new am4charts.XYChartScrollbar();
@@ -404,20 +480,40 @@ class App extends Component {
   }
 
   componentDidUpdate(oldProps) {
-    if (oldProps.testValue.historical !== this.props.testValue.historical) {
-      this.chart.data=this.props.testValue.historical;
+    if (oldProps.testValue.reference.historical !== this.props.testValue.reference.historical) {
+      this.originalDataChart.data=this.props.testValue.reference.historical;
+    }
+    if (oldProps.testValue.predicted !== this.props.testValue.predicted) {
+      const newData=this.generateData(this.props.testValue.predicted);
+      this.props.onProceedResult(newData)
+      console.log("componentDidUpdate newData", newData)
+      
+    }
+    if (oldProps.testValue.predictedResults !== this.props.testValue.predictedResults) {
+      this.chart.data=this.props.testValue.predictedResults;
+      console.log("updated chart", this.chart.data)
     }
   }
 
   render() {
-    const currentValue = this.props.testValue.currentValue;
+    //console.log("real",this.props.testValue.currentValue.reference)
+    //const currentValue = this.props.testValue.currentValue.reference;
     return (
       <React.Fragment>
         <Layout className="layout">
-      <HeaderCommon currentUrl={this.locator} />
+      <HeaderCommon currentUrl={this.props.location.pathname} />
     <Content style={{ padding: '0 50px' }}>
       <BreadcrumbCommon />
-      <Results headers={headers} data={this.props.testValue.historical} />
+      <div className="site-layout-content">
+        <Tabs defaultActiveKey="1" >
+          <TabPane tab="Predicted" key="1" forceRender="true">
+            <Results headers={headersPredicted} data={this.props.testValue.predictedResults||[]} amchartId="chartdiv"/>
+          </TabPane>
+          <TabPane tab="Historical" key="2" forceRender="true">
+            <Results headers={headers} data={this.props.testValue.reference.historical||[]}  amchartId="originaldata"/>
+          </TabPane>
+        </Tabs>
+      </div>
     </Content>
     <FooterCommon />
   </Layout>
@@ -428,9 +524,16 @@ class App extends Component {
 
 export default connect(
   state => ({ testValue: state.testValue }),
+
   dispatch => ({
     onValueChange: newValue => {
       dispatch({ type: "CHANGE_VALUE", payload: newValue });
+    },
+    onGetPredicted: newValue => {
+      dispatch({ type: "GET_PREDICTED", payload: newValue });
+    },
+    onProceedResult: newValue=> {
+      dispatch({type: "ON_PROCCED_RESULTS", payload: newValue})
     }
   })
 )(App);
