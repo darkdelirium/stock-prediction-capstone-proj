@@ -41,8 +41,6 @@ def predict():
 			with graph.as_default():
 				y_pred = model.predict(trim_dataset(x_test_t, BATCH_SIZE), batch_size=BATCH_SIZE)
 
-			#print('printing y_pred ..')
-			#print(y_pred)
 			y_test_t = trim_dataset(y_test_t, BATCH_SIZE)
 			y_test_t_org = ((y_test_t * min_max_scaler.data_range_[3]) + min_max_scaler.data_min_[3]).flatten()[-1360:]
 			print("ytest", y_test_t_org)
@@ -59,8 +57,7 @@ def predict():
 
 			y_pred_org_converted_to_list = y_pred_org.tolist()
 			y_test_t_org_converted_to_list = y_test_t_org.tolist()
-			print(y_test_t_org_converted_to_list)
- 
+			 
 			#prepare output format
 			json_out = {'y_pred_values': y_pred_org_converted_to_list}
 			outputJSON = {'y_pred_values':y_pred_org_converted_to_list,
