@@ -124,7 +124,7 @@ plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 #plt.show()
-plt.savefig(('train_vis_BS_'+str(BATCH_SIZE)+"_"+time.ctime()+'.png'))
+plt.savefig('train_vis_BS.png')
 
 
 # model.evaluate(x_test_t, y_test_t, batch_size=BATCH_SIZE
@@ -162,7 +162,7 @@ plt.ylabel('Price')
 plt.xlabel('Days')
 plt.legend(['Prediction', 'Real'], loc='upper left')
 plt.show()
-plt.savefig(( 'pred_vs_real_BS'+str(BATCH_SIZE)+"_"+time.ctime()+'.png'))
+plt.savefig('pred_vs_real_BS.png')
 print_time("program completed ", stime)
 
 
