@@ -381,7 +381,7 @@ class App extends Component {
     console.log("onvaluechange",this.props.onValueChange)
     this.props.onValueChange(data.data)
 
-    const predicted = await Axios.get("http://127.0.0.1:5000/predicted_stock_values")
+    const predicted = await Axios.get("http://127.0.0.1:5000/predict")
     console.log("predicted", predicted.data)
     this.props.onGetPredicted(predicted.data)
   }
@@ -393,8 +393,8 @@ class App extends Component {
     console.log(`DEBUG handle ${locator}`);
 
     let originalDataChart = am4core.create("originaldata", am4charts.XYChart);
-    originalDataChart.numberFormatter.numberFormat = "#.";
-    originalDataChart.dateFormatter.numberFormat = "#."
+    //originalDataChart.numberFormatter.numberFormat = "#.";
+    //originalDataChart.dateFormatter.numberFormat = "#."
     originalDataChart.paddingRight=20;
     originalDataChart.data=this.props.testValue.reference.historical||[];
     let dateAxisO = originalDataChart.xAxes.push(new am4charts.DateAxis());
@@ -406,7 +406,7 @@ class App extends Component {
 
     let seriesO = originalDataChart.series.push(new am4charts.LineSeries());
     seriesO.name = "High";
-    seriesO.dataFields.valueX = "date";
+    seriesO.dataFields.dateX = "date";
     //yAxis.numberFormatter.numberFormat = "#.##";
     seriesO.dataFields.valueY = "high";
 
@@ -414,12 +414,11 @@ class App extends Component {
     originalDataChart.cursor = new am4charts.XYCursor();
 
     //series 2
-    let series2O = originalDataChart.series.push(new am4charts.LineSeries());
+   let series2O = originalDataChart.series.push(new am4charts.LineSeries());
     series2O.name = "Low";
     series2O.stroke = am4core.color("#CDA2AB");
-    series2O.dataFields.valueX = "date";
+    series2O.dataFields.dateX = "date";
     series2O.dataFields.valueY = "low";
-
 
     /*let scrollbarXO = new am4charts.XYChartScrollbar();
     scrollbarXO.series.push(seriesO);
@@ -431,46 +430,46 @@ class App extends Component {
    
   //========================
 
-    let chart = am4core.create("chartdiv", am4charts.XYChart);
+  let chart = am4core.create("chartdiv", am4charts.XYChart);
 
-    chart.paddingRight = 20;
+  chart.paddingRight = 20;
 
-    const newData=this.generateData(this.props.testValue.predicted);
-    this.props.onProceedResult(newData)
-    console.log("component did mount newData", newData)
-    //chart.data=testdata;
-    chart.data=this.props.testValue.predictedResults||[];
-   // chart.data=this.props.testValue.historical||[];
-    //chart.data=this.props.testValue.predicted||[];
-    let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-    dateAxis.renderer.grid.template.location = 0;
+  const newData=this.generateData(this.props.testValue.predicted);
+  this.props.onProceedResult(newData)
+  console.log("component did mount newData", newData)
+  //chart.data=testdata;
+  chart.data=this.props.testValue.predictedResults||[];
+ // chart.data=this.props.testValue.historical||[];
+  //chart.data=this.props.testValue.predicted||[];
+  let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+  dateAxis.renderer.grid.template.location = 0;
 
-    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-    valueAxis.tooltip.disabled = true;
-    valueAxis.renderer.minWidth = 35;
+  let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+  valueAxis.tooltip.disabled = true;
+  valueAxis.renderer.minWidth = 35;
 
-    let series = chart.series.push(new am4charts.LineSeries());
-    series.name = "Predict";
-    series.dataFields.dateX = "day";
-    series.dataFields.valueY = "value";
+  let series = chart.series.push(new am4charts.LineSeries());
+  series.name = "Predict";
+  series.dataFields.dateX = "day";
+  series.dataFields.valueY = "value";
 
-    series.tooltipText = "{valueY.value}";
-    chart.cursor = new am4charts.XYCursor();
+  series.tooltipText = "{valueY.value}";
+  chart.cursor = new am4charts.XYCursor();
 //series 2
-    let series2 = chart.series.push(new am4charts.LineSeries());
-    series2.name = "Real";
-    series2.stroke = am4core.color("#CDA2AB");
-    series2.dataFields.dateX = "day";
-    series2.dataFields.valueY = "real";
+  let series2 = chart.series.push(new am4charts.LineSeries());
+  series2.name = "Real";
+  series2.stroke = am4core.color("#CDA2AB");
+  series2.dataFields.dateX = "day";
+  series2.dataFields.valueY = "real";
 
 
-    let scrollbarX = new am4charts.XYChartScrollbar();
-    scrollbarX.series.push(series);
-    scrollbarX.series.push(series2);
+  let scrollbarX = new am4charts.XYChartScrollbar();
+  scrollbarX.series.push(series);
+  scrollbarX.series.push(series2);
 
-    chart.scrollbarX = scrollbarX;
+  chart.scrollbarX = scrollbarX;
 
-    this.chart = chart;
+  this.chart = chart;
   }
 
   componentWillUnmount() {

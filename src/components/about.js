@@ -12,7 +12,7 @@ class About extends Component {
     return (
       <React.Fragment>
     <Layout className="layout">
-      <HeaderCommon />
+      <HeaderCommon currentUrl={this.props.location.pathname} />
     <Content style={{ padding: '0 50px' }}>
       <BreadcrumbCommon />
       <div className="site-layout-content">
