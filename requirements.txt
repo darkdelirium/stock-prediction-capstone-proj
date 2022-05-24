@@ -97,7 +97,7 @@ tensorflow==1.15.0
 tensorflow-cpu==1.15.0
 tensorflow-cpu-estimator==1.15.1
 tensorflow-estimator==1.15.1
-tensorflow-gpu==1.15.0
+tensorflow-gpu==2.6.4
 tensorflow-gpu-estimator==2.1.0
 termcolor==1.1.0
 terminado==0.8.3
