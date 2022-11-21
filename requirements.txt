@@ -93,7 +93,7 @@ six==1.14.0
 sklearn==0.0
 tables==3.6.1
 tensorboard==1.15.0
-tensorflow==1.15.0
+tensorflow==2.9.3
 tensorflow-cpu==1.15.0
 tensorflow-cpu-estimator==1.15.1
 tensorflow-estimator==1.15.1
